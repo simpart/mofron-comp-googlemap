@@ -1,6 +1,6 @@
 {
   "name": "mofron-comp-googlemap",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "googme map component for mofron",
   "main": "index.js",
   "scripts": {
@@ -9,6 +9,9 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/simpart/mofron-comp-googlemap.git"
+  },
+  "dependencies": {
+    "@googlemaps/js-api-loader" : ""
   },
   "keywords": [
     "mofron",

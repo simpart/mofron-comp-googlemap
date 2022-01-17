@@ -3,28 +3,31 @@
  * @brief google map component for mofron
  * @license MIT
  */
+const Loader = require("@googlemaps/js-api-loader");
 const comutl = mofron.util.common;
 
 module.exports = class extends mofron.class.Component{
     /**
      * initialize component
      * 
-     * @param (dict) component config
+     * @param (mixed) apikey parameter
+     *                dict: component config
      * @type private
      */
-    constructor (p1,p2) {
+    constructor (p1) {
         try {
             super();
-            this.name("GoogleMap");
+            this.modname("GoogleMap");
             
-            this.shortForm("center");
+            this.shortForm("apikey");
             
+	    this.confmng().add("apikey", { type: "string" });
             this.confmng().add("center", { type: "object", init: { lat: 0, lng: 0 } });
 	    this.confmng().add("zoom", { type: "number", init: 12 });
             this.confmng().add("map", { type: "object" });
-
+            
 	    if (0 < arguments.length) {
-                this.config(p1,p2);
+                this.config(p1);
             }
         } catch (e) {
             console.error(e.stack);
@@ -39,17 +42,24 @@ module.exports = class extends mofron.class.Component{
      */
     afterRender () {
         try {
-            let map = new google.maps.Map(
-	        document.getElementById(this.childDom().id()),
-		{ center: this.center(), zoom: this.zoom() }
-            );
-	    this.confmng("map", map);
+	    let loader = new Loader.Loader({
+	        apiKey: this.confmng("apikey"),
+                version: "weekly",
+            });
+            
+	    let mapcmp = this;
+            loader.load().then(() => {
+	        let map = new google.maps.Map(
+		    document.getElementById(this.childDom().id()),
+                    { center: mapcmp.center(), zoom: mapcmp.zoom() }
+                );
+                mapcmp.map(map);
+	    });
 	} catch (e) {
             console.error(e.stack); 
             throw e;
 	}
     }
-    
     
     /**
      * initialize dom contents
@@ -72,6 +82,23 @@ module.exports = class extends mofron.class.Component{
     }
     
     /**
+     * google api key setter/getter
+     *
+     * @param (string) api key
+     *                 undefined: call as getter
+     * @return (string) api key
+     * @type parameter
+     */
+    apikey (prm) {
+        try {
+            return this.confmng("apikey",prm);
+	} catch (e) {
+	    console.error(e.stack);
+            throw e;
+	}
+    }
+    
+    /**
      * center position of google map
      * 
      * @param (dist) {lat: (float), lng: (float)}
@@ -80,11 +107,13 @@ module.exports = class extends mofron.class.Component{
      */
     center (lat,lng) {
         try {
-	console.log("center");
 	    if (undefined === lat) {
                 return this.confmng("center");
 	    }
             this.confmng("center", { lat: lat, lng: lng });
+	    if (null !== this.map()) {
+	        this.map().setCenter(new google.maps.LatLng(lat,lng));
+	    }
 	} catch (e) {
             console.error(e.stack);
             throw e;
@@ -113,9 +142,9 @@ module.exports = class extends mofron.class.Component{
      * @return (object) map object
      * @type function
      */
-    map () {
+    map (prm) {
         try {
-            return this.confmng("map");
+            return this.confmng("map",prm);
 	} catch (e) {
             console.error(e.stack);
             throw e;
